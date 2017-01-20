@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="cn">
+<head>
+    <meta charset="GBK">
+    <meta http-equiv="Content-Type" content="text/html; charset=GBK" />
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <title>Map</title>
+    <style>
+        body, html,#allmap {width: 100%;height: 700px;;overflow: hidden;margin:0;}
+        #golist {display: none;}
+        @media (max-device-width: 780px){#golist{display: block !important;}}
+        .container{width:1080px;margin:0 auto;}
+        .title{width:100%;text-align: center;}
+        h1{color:#2280E8;}
+    </style>
+    <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=7OV3ewXplRwrOHTzXIm9gxqG1jGjzMzl"></script>
+</head>
+<body>
+<div class="container">
+    <div class="title">
+    </div>
+    <div class="content">
+        <div id="allmap"></div>
+    </div>
+</div>
+
+</body>
+<script type="text/javascript">
+    // 百度地图API功能
+
+    var map = new BMap.Map("allmap");            // 创建Map实例
+	//map.centerAndZoom("南京",11);      // 初始化地图,用城市名设置地图中心点
+	var center = new BMap.Point(118.795952,32.062002);//默认中心是南京市坐标
+    map.centerAndZoom(center,11);                 // 初始化地图,设置中心点坐标和地图级别。
+
+	map.addControl(new BMap.NavigationControl({ anchor: BMAP_ANCHOR_TOP_LEFT, type: BMAP_NAVIGATION_CONTROL_LARGE }));  //左上角，添加默认缩放平移控件
+	map.addControl(new BMap.ScaleControl({ anchor: BMAP_ANCHOR_BOTTOM_LEFT })); //右下角，添加比例尺
+	map.addControl(new BMap.OverviewMapControl({isOpen:true, anchor: BMAP_ANCHOR_BOTTOM_RIGHT})); //左下角，添加缩略图
+	map.addControl(new BMap.MapTypeControl());   //默认右上角，添加地图类型
+	map.enableScrollWheelZoom(true);     //开启鼠标滚轮缩放
+	//添加城市切换控件
+	map.addControl(new BMap.CityListControl({
+		anchor: BMAP_ANCHOR_TOP_LEFT,
+		offset: new BMap.Size(50, 20),
+		// 切换城市之间事件
+		// onChangeBefore: function(){
+		//    alert('before');
+		// },
+		// 切换城市之后事件
+		// onChangeAfter:function(){
+		//   alert('after');
+		// }
+	}));
+
+	var points = [[118.82608,31.893347,"东南大学九龙湖校区"],
+					 [118.801123,32.061307,"东南大学四牌楼校区"],
+					 [118.782921,32.081038,"东南大学丁家桥校区"],
+					 [118.71083,32.157019,"东南大学浦口校区"]
+					];
+	
+	var pointjwd= new Array(0);//将所有的桥梁经纬度以BMap.Point类型的数组来存储
+	for(var i=0;i<points.length;i++){
+		var point=new BMap.Point(points[i][0],points[i][1]);
+		pointjwd.push(point);
+	}
+	
+	var contents="<h4 style='margin:0 0 5px 0;padding:0.2em 0'></h4>" + 
+	"<div>"+
+	"<a href='http://www.baidu.com' />"
+	+"点击查看详细信息"+
+	"</div>";
+
+	for(var i=0;i<points.length;i++){
+		var marker = new BMap.Marker(new BMap.Point(points[i][0],points[i][1]));  // 创建标注
+		var label = new BMap.Label(points[i][2],{offset:new BMap.Size(20,-10)});//创建文字标签
+		var content = contents;//信息窗口内容
+		map.addOverlay(marker);               // 将标注添加到地图中
+		marker.setAnimation(BMAP_ANIMATION_BOUNCE); //跳动的动画
+		marker.setLabel(label);//设置文字标签
+		addClickHandler(content,marker);
+	}
+
+	
+	var polyline = new BMap.Polyline(pointjwd, {strokeColor:"red", strokeWeight:2, strokeOpacity:0.5});   //创建折线
+	map.addOverlay(polyline);   //增加折线
+
+	var opts = {
+				width : 250,     // 信息窗口宽度
+				height: 250,     // 信息窗口高度
+				title : "信息窗口" , // 信息窗口标题
+				enableMessage:true//设置允许信息窗发送短息
+			   };
+	function addClickHandler(content,marker){
+		marker.addEventListener("click",function(e){
+			openInfo(content,e)}
+		);
+	}
+	function openInfo(content,e){
+		var p = e.target;
+		var point = new BMap.Point(p.getPosition().lng, p.getPosition().lat);
+		var infoWindow = new BMap.InfoWindow(content,opts);  // 创建信息窗口对象 
+		map.openInfoWindow(infoWindow,point); //开启信息窗口
+	}
+
+
+</script>
+</html>
